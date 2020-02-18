@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>SAS SVG</title>
+
+	<script src="./JS/jquery/jquery.js"></script>
+	<script src="./JS/d3v4/build/d3.min.js"></script>
+    <script src="./JS/techan/dist/techan.js"></script>
+    <script src="./JS/KIMLIB/SVG_lib.js"></script>
+    <script src="./JS/KIMLIB/SVG_AVPSHC.js"></script>
+    <script src="./JS/three/three.min.js"></script>
+    <script src="./JS/three/BufferGeometryUtils.js"></script>
+
+
+    <script src="./JS/KIMLIB/THR.js"></script>
+
+
+</head>
+
+
+
+<body>
+	<h2>SAS SVG</h2>
+
+
+
+
+
+	<link rel="stylesheet" href="css/simpleexample.css">
+
+
+	<script type="text/javascript">
+		var start = + new Date();
+	
+		var OCHLCHART_width = 800 ,  OCHLCHART_height = 200;
+		var BRUSH_height=50;
+
+
+		var sh = new Stock("0000011");sh.load_DK();
+		var svg_SHdomain = d3.select("body").append("svg")
+					.attr("width",OCHLCHART_width).attr("height",BRUSH_height).attr("style","background:black");
+		var nDK_brush = new DK_brush(svg_SHdomain,OCHLCHART_width,BRUSH_height,sh);
+			
+		var stock = new Stock("0027142");stock.load_DK();
+		// var svg = d3.select("body").append("svg").attr("width",OCHLCHART_width).attr("height",OCHLCHART_height).attr("style","background:black");		
+		var svg = d3.select("body").append("svg").attr("width",800).attr("height",200).attr("style","background:black");		
+					
+		var a = new candlestick_DK(svg,OCHLCHART_width,OCHLCHART_height,stock,sh);
+			a.add_index_line("AVP15");	
+			a.add_index_line("AVP30");	
+			a.add_index_line("AVP60");	
+			a.add_index_line("AVP120");	
+			a.add_index_line("AVP240");	
+		nDK_brush.pushchild(a);
+
+		var end = + new Date();
+		console.log(end-start);
+		// var svg_SHdomain_2 = d3.select("body").append("svg")
+		// 			.attr("width",OCHLCHART_width).attr("height",BRUSH_height).attr("style","background:black");
+		// var nDK_brush_2 = new DK_brush(svg_SHdomain_2,OCHLCHART_width,BRUSH_height,sh);
+		// var svg_2 = d3.select("body").append("svg").attr("width",OCHLCHART_width).attr("height",OCHLCHART_height).attr("style","background:black");							
+		// var a2 = new candlestick_DK(svg_2,OCHLCHART_width,OCHLCHART_height,stock,sh);
+		// 	a2.add_index_line("AVP15");	
+		// 	a2.add_index_line("AVP30");	
+		// 	a2.add_index_line("AVP60");	
+		// 	a2.add_index_line("AVP120");	
+		// 	a2.add_index_line("AVP240");	
+		// nDK_brush_2.pushchild(a2);
+
+
+		start = + new Date();
+
+		let renderer = new THREE.WebGLRenderer({antialiasing:true});
+		renderer.setSize(OCHLCHART_width, OCHLCHART_height);
+		renderer.setPixelRatio(window.devicePixelRatio);
+		document.body.appendChild(renderer.domElement);
+		const scene = new THREE.Scene();
+
+
+		var shdate = sh.DK.map( techan.plot.candlestick().accessor().d);
+		var xScale = d3.scaleOrdinal().domain(shdate).range(d3.range(1,10000));
+
+
+		THR_candlechart(scene,xScale,stock.DK);
+		camera = new THREE.OrthographicCamera(0, 0, 0, 0, 1, 10000);
+		DTs = shdate;
+    	var startDT = DTs[0], endDT=DTs[DTs.length-1];
+	    var data = stock.DK.filter(d => (d.date >= startDT) & (d.date <= endDT));
+	    var shdata = sh.DK.filter(d => (d.date >= startDT) & (d.date <= endDT));
+
+		xS = [xScale(startDT),xScale(endDT)];
+		yS = techan.scale.plot.ohlc(data,techan.plot.candlestick().accessor()).domain();
+		yS_sh = techan.scale.plot.ohlc(shdata,techan.plot.candlestick().accessor()).domain();
+
+		changeCameraDomain(camera,xS,yS);
+		renderer.render(scene, camera);
+		// var xS = [xScale(stock.DK[0].date),xScale(stock.DK[stock.DK.length-1].date)];
+		// var yS = techan.scale.plot.ohlc(stock.DK,techan.plot.candlestick().accessor()).domain();
+
+		// changeCameraDomain(camera,xS,yS);
+		// renderer.render(scene, camera);	
+
+		function refresh_THR(){
+			var start_3 = + new Date();
+			// console.log("4",new Date()-start_3);
+
+		    	var DTs = [];
+			    if(d3.event.selection !== null){
+			    	DTs = shdate.slice.apply(shdate,  d3.event.selection.map(nDK_brush.xScale.zoomable().invert));
+			    } else{
+			    	DTs = shdate;
+			    }
+			
+		    	var startDT = DTs[0], endDT=DTs[DTs.length-1];
+			    var data = stock.DK.filter(d => (d.date >= startDT) & (d.date <= endDT));
+
+
+				var xS = [xScale(startDT),xScale(endDT)];
+				var yS = techan.scale.plot.ohlc(data,techan.plot.candlestick().accessor()).domain();
+
+	    		var shdata = sh.DK.filter(d => (d.date >= startDT) & (d.date <= endDT));
+				var yS_sh = techan.scale.plot.ohlc(shdata,techan.plot.candlestick().accessor()).domain();
+
+
+
+				changeCameraDomain(camera,xS,yS);
+				renderer.render(scene, camera);
+			console.log("4",new Date()-start_3);
+			refresh_gl(camera,xS,yS);
+			refresh_OneGl(camera,xS,yS,yS_sh);
+		}
+
+
+
+		// const scene_sh = new THREE.Scene();
+		// const renderer_sh = new THREE.WebGLRenderer();
+		// renderer_sh.setSize(OCHLCHART_width, OCHLCHART_height);
+		// renderer_sh.setPixelRatio(window.devicePixelRatio);
+		// document.body.appendChild(renderer_sh.domElement);
+
+		// var shColorOption = {
+		// 	UpColor: 	0xAAAAAA,
+		// 	DownColor: 	0x333333
+		// }
+		// THR_candlechart(scene_sh,xScale,sh.DK,shColorOption);
+		// var xS_sh = [xScale(sh.DK[0].date),xScale(sh.DK[sh.DK.length-1].date)];
+		// var yS_sh = techan.scale.plot.ohlc(sh.DK,techan.plot.candlestick().accessor()).domain();
+
+		// var camera_sh = new THREE.OrthographicCamera(0, 0, 0, 0, 1, 10000);
+		// changeCameraDomain(camera_sh,xS_sh,yS_sh);
+
+	</script>
+
+	<script src="./JS/WebGL/webgl-utils.js"></script>
+	<script src="./JS/WebGL/webgl-debug.js"></script>
+	<script src="./JS/WebGL/cuon-utils.js"></script>
+	<script src="./JS/WebGL/cuon-matrix.js"></script>
+    <script src="./JS/KIMLIB/webgl_KIMLIB.js"></script>
+
+	<canvas id="candle_webgl" width="0" height="0" onload="webgl_main()">
+		Please use a browser that supports "canvas"
+	</canvas>	
+
+	<canvas id="textured" width="800" height="200">
+		Please use a browser that supports "canvas"
+	</canvas>	
+
+
+	<script type="text/javascript">
+		var textured_canvas = document.getElementById('textured');
+
+		var textured_context = textured_canvas.getContext('2d');
+
+		webgl_main();
+		function webgl_main(){
+			console.log("+webgl_main");
+
+			var canvas = document.getElementById("candle_webgl");
+			gl = getWebGLContext(canvas);
+
+			VSHADER_SOURCE =
+				'attribute vec4 a_Position;\n' +
+				'uniform mat4 u_ModelViewMatrix;\n' +
+				'void main() {\n' +
+				' 	gl_Position = u_ModelViewMatrix * a_Position;\n' +				
+				'}\n';
+
+			FSHADER_SOURCE =
+				'precision mediump float;\n' +
+				'uniform vec4 u_FragColor;\n' + 
+				'void main() {\n' +
+				' 	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n' + 
+				' 	gl_FragColor = u_FragColor;\n' +
+				'}\n';
+
+			if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+				console.log('Failed to initialize shaders.');
+				return;
+			}
+
+			var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+			u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+			// var u_Translation = gl.getUniformLocation(gl.program, 'u_Translation');
+			u_ModelViewMatrix = gl.getUniformLocation(gl.program,'u_ModelViewMatrix');
+
+			var vertexBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+			gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(a_Position);
+
+
+			// Create a texture to render to
+			const targetTextureWidth = OCHLCHART_width;
+			const targetTextureHeight = OCHLCHART_height;
+			const targetTexture = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+			// define size and format of level 0
+			const level = 0;
+			const internalFormat = gl.RGBA;
+			const border = 0;
+			const format = gl.RGBA;
+			const type = gl.UNSIGNED_BYTE;
+			const data = null;
+			gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+			              targetTextureWidth, targetTextureHeight, border,
+			              format, type, data);
+			// set the filtering so we don't need mips
+							gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0); 
+
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+
+			// Create and bind the framebuffer
+			const fb = gl.createFramebuffer();
+			gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+			// attach the texture as the first color attachment
+			const attachmentPoint = gl.COLOR_ATTACHMENT0;
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
+
+
+			// render to our targetTexture by binding the framebuffer
+			gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+
+			// render cube with our 3x2 texture
+			// gl.bindTexture(gl.TEXTURE_2D, texture);
+
+			// Tell WebGL how to convert from clip space to pixels
+			gl.viewport(0, 0, targetTextureWidth, targetTextureHeight);
+
+
+
+
+			bodyr = KIMGL_CandleBody(stock.DK,xScale,0);
+			texturedata = new Uint8Array(targetTextureWidth * targetTextureHeight * 4);
+
+			shbodyr = KIMGL_CandleBody(sh.DK,xScale,1);
+
+
+
+ 			refresh_gl(camera,xS,yS);
+		}
+
+		function refresh_gl(camera,xS,yS){
+		
+			var start_4 = + new Date();
+				var viewMatrix = new Matrix4();
+				viewMatrix.setLookAt(camera.position.x, camera.position.y, -1, camera.position.x, camera.position.y, 0, 0, 1, 0);
+
+				changeCameraDomain(camera,xS,[yS[1],yS[0]])
+
+				var modelViewMatrix = camera.projectionMatrix;
+				modelViewMatrix.multiply(viewMatrix);
+
+				gl.uniformMatrix4fv(u_ModelViewMatrix, false, modelViewMatrix.elements);
+
+
+				gl.clearColor(0.0, 0.0, 0.0, 1.0);
+				gl.clear(gl.COLOR_BUFFER_BIT);			
+
+				var colorOption = {
+					UpColor: 0xff0000,
+					DownColor:0x00ff00
+				}
+
+				var shColorOption = {
+					UpColor: 	0xAAAAAA,
+					DownColor: 	0x333333
+				}
+
+				KIMGL_Draw_CandleChart(gl,bodyr,u_FragColor,shColorOption);
+
+    			gl.readPixels(0, 0, 800, 200, gl.RGBA, gl.UNSIGNED_BYTE, texturedata);
+
+				// Copy the pixels to a 2D canvas
+				var imageData = textured_context.createImageData(800, 200);
+				imageData.data.set(texturedata);
+				textured_context.putImageData(imageData, 0, 0);
+
+			console.log("gl redering time",new Date()-start_4);
+		}
+
+
+
+	</script>
+
+
+	<canvas id="OneGl" width="800" height="200"></canvas>	
+	<script type="text/javascript">
+		console.log("+OneGl_main");
+
+		var OneGl_canvas = document.getElementById('OneGl');
+		OneGl = getWebGLContext(OneGl_canvas);
+		if (!initShaders(OneGl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+			console.log('Failed to initialize shaders.');
+		}
+		OneGl_a_Position = OneGl.getAttribLocation(OneGl.program, 'a_Position');
+		OneGl_u_FragColor = OneGl.getUniformLocation(OneGl.program, 'u_FragColor');
+		OneGl_u_ModelViewMatrix = OneGl.getUniformLocation(OneGl.program,'u_ModelViewMatrix');
+
+		var vertexBuffer = OneGl.createBuffer();
+		OneGl.bindBuffer(OneGl.ARRAY_BUFFER, vertexBuffer);
+		OneGl.vertexAttribPointer(OneGl_a_Position, 2, OneGl.FLOAT, false, 0, 0);
+		OneGl.enableVertexAttribArray(OneGl_a_Position);
+		
+		changeCameraDomain(camera,xS,yS);		
+ 		refresh_OneGl(camera,xS,yS,yS_sh);
+		function refresh_OneGl(camera,xS,yS,yS_sh){
+			changeCameraDomain(camera,xS,yS);		
+			var start_4 = + new Date();
+				var viewMatrix = new Matrix4();
+				viewMatrix.setLookAt(camera.position.x, camera.position.y, -1, camera.position.x, camera.position.y, 0, 0, 1, 0);
+
+
+				var modelViewMatrix = camera.projectionMatrix;
+				modelViewMatrix.multiply(viewMatrix);
+
+				OneGl.uniformMatrix4fv(OneGl_u_ModelViewMatrix, false, modelViewMatrix.elements);
+
+
+				OneGl.clearColor(0.0, 0.0, 0.0, 1.0);
+				OneGl.clear(OneGl.COLOR_BUFFER_BIT);			
+
+				var colorOption = {
+					UpColor: 0xff0000,
+					DownColor:0x00ff00
+				}
+
+				var shColorOption = {
+					UpColor: 	0xAAAAAA,
+					DownColor: 	0x333333
+				}
+
+				KIMGL_Draw_CandleChart(OneGl,bodyr,OneGl_u_FragColor,colorOption);
+
+				changeCameraDomain(camera,xS,yS_sh);	
+
+				viewMatrix.setLookAt(camera.position.x, camera.position.y, -1, camera.position.x, camera.position.y, 0, 0, 1, 0);
+				modelViewMatrix = camera.projectionMatrix;
+				modelViewMatrix.multiply(viewMatrix);
+
+				OneGl.uniformMatrix4fv(OneGl_u_ModelViewMatrix, false, modelViewMatrix.elements);
+				KIMGL_Draw_CandleChart(OneGl,shbodyr,OneGl_u_FragColor,shColorOption);
+
+
+
+
+			console.log("gl redering time",new Date()-start_4);
+		}
+
+
+
+	</script>	
+
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>SAS SVG</title>
+
+	<script src="./JS/jquery/jquery.js"></script>
+	<script src="./JS/d3v4/build/d3.min.js"></script>
+    <script src="./JS/techan/dist/techan.js"></script>
+    <script src="./JS/KIMLIB/SVG_lib.js"></script>
+    <script src="./JS/KIMLIB/SVG_AVPSHC.js"></script>
+
+
+
+
+</head>
+
+
+
+<body>
+	<h2>SAS SVG</h2>
+
+
+
+
+
+	<link rel="stylesheet" href="css/simpleexample.css">
+
+
+	<script type="text/javascript">
+		var OCHLCHART_width = 800 ,  OCHLCHART_height = 200;
+		var BRUSH_height=50;
+
+
+
+
+		var sh = new Stock("0000011");sh.load_DK();
+
+		var svg_SHdomain = d3.select("body").append("svg")
+					.attr("width",OCHLCHART_width).attr("height",BRUSH_height).attr("style","background:black");
+		var nDK_brush = new DK_brush(svg_SHdomain,OCHLCHART_width,BRUSH_height,sh);
+			
+		var stock = new Stock("0023002");stock.load_DK();
+		var svg = d3.select("body").append("svg").attr("width",OCHLCHART_width).attr("height",OCHLCHART_height).attr("style","background:black");		
+					
+		var a = new candlestick_DK(svg,OCHLCHART_width,OCHLCHART_height,stock,sh);
+		a.add_index_line("AVP15");	
+		a.add_index_line("AVP30");	
+		a.add_index_line("AVP60");	
+		a.add_index_line("AVP120");	
+		a.add_index_line("AVP240");	
+
+		nDK_brush.pushchild(a);
+	</script>
+
+
+<!-- Sh M5 -->
+	<script type="text/javascript">
+		sh.load_M5();
+		var svg_SHdomain_M5 = d3.select("body").append("svg").attr("width",OCHLCHART_width).attr("height",BRUSH_height).attr("style","background:black");
+					
+		var nDK_brush_M5 = new M5_brush(svg_SHdomain_M5,OCHLCHART_width,BRUSH_height,sh);
+		            
+
+		stock.load_M5();
+		var svg_M5 = d3.select("body").append("svg").attr("width",OCHLCHART_width).attr("height",OCHLCHART_height).attr("style","background:black");		
+		var a_M5 = new candlestick_M5(svg_M5,OCHLCHART_width,OCHLCHART_height,stock,sh);
+		a_M5.add_index_line("AVP15");	
+		a_M5.add_index_line("AVP30");	
+		a_M5.add_index_line("AVP60");	
+		a_M5.add_index_line("AVP120");	
+		a_M5.add_index_line("AVP240");	
+		a_M5.add_index_line("MODEL1");	
+
+		nDK_brush_M5.pushchild(a_M5);
+
+	</script>
+
+	<script type="text/javascript">
+		var AVPSHC_width = 300 ,  AVPSHC_height = 400;					
+
+		var svg_AVPSHC = d3.select("body").append("svg").attr("width",AVPSHC_width).attr("height",AVPSHC_height).attr("style","background:black");
+
+		var nAVPSHC = new AVPSHC(svg_AVPSHC,AVPSHC_width,AVPSHC_height,stock);
+		nAVPSHC.add_xyline("SHC15","AVP15","SA15");
+		nAVPSHC.add_xyline("SHC30","AVP30","SA30");
+		nAVPSHC.add_xyline("SHC60","AVP60","SA60");
+		nAVPSHC.add_xyline("SHC120","AVP120","SA120");
+		nAVPSHC.add_xyline("SHC240","AVP240","SA240");
+
+
+
+
+
+	</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title> Stock Detail ... </title>
+
+	<script src="./JS/jquery/jquery.js"></script>
+
+    <script src="./JS/d3v4/build/d3.min.js"></script>
+    <script src="./JS/techan/dist/techan.js"></script>
+    <script src="./JS/WebGL/cuon-utils.js"></script>
+    <script src="./JS/WebGL/cuon-matrix.js"></script>
+    <script src="./JS/three/three.min.js"></script>
+   
+    <link rel="stylesheet" href="css/simpleexample.css">
+    <link rel="stylesheet" href="css/KIM_base.css">
+    <script  src="./JS/KIMLIB/KIMLIB_KIM_Tools.js"></script>
+    <script src="./JS/KIMLIB/webgl_KIMLIB.js"></script>
+    <script  src="./JS/KIMLIB/KIMLIB_Stock.js"></script>
+    <script  src="./JS/KIMLIB/KIMGL_Linechart.js"></script>
+    <script  src="./JS/KIMLIB/KIMLIB_Fdesolve.js"></script>
+
+
+</head>
+
+
+<body>
+    <div class="KIM_header" id="myHeader">        
+    
+
+    <button type="button" onclick="ChangeSize()"> Change Size </button>
+    <button type="button" onclick="Update()"> Update </button>
+    
+    </div>
+        
+    <script type="text/javascript">
+
+        function ChangeSize(){
+            console.log("ChangeSize");
+            var OCHLCHART_width = 1000,  OCHLCHART_height = 200;
+            nDK_M5_MP_SA.resize(10,150,OCHLCHART_width,OCHLCHART_height);
+        }
+
+        function Update(){
+            nDK_M5_MP_SA.update_TDY(nTDY);
+        }
+
+        let myHeader = document.getElementById("myHeader");
+        let nBrushPad = new BrushPad(myHeader,1000,40);
+
+        var OCHLCHART_width = 1200 ,  OCHLCHART_height = 300;
+
+        let shders = {
+            DK:     new Shaders(),
+            M5:     new Shaders(),
+            SA:     new Shaders(),
+            MP:     new Shaders(),
+        }           
+
+        var stock = new Stock("0000012");stock.load_All();
+        let nDK_M5_MP_SA = new KIMLIB_DK_M5_MP_SA(stock,document.body,nBrushPad,10,150,OCHLCHART_width,OCHLCHART_height,shders);
+        let nTDY = new TDY_DK();nTDY.update();
+
+
+        stock.load_estPrams();
+        let FF = new KIMLIB_Factor();
+
+        let nFdesolver = new KIMLIB_Fdesolve(stock.estParams,FF.DK); 
+        // nFdesolver.give_bigEigenCompsition_target(nDK_M5_MP_SA.DKchart.chart.SVGonCanvas);
+
+        let shder_Fdesolve = new Shaders();
+
+
+        L1 = new KIMGL_FdesolveChart(nFdesolver,"DK",document.body,nBrushPad.DK_brush,shder_Fdesolve);
+        L1.resize(
+            10,
+            150 + OCHLCHART_height + 5,
+            nDK_M5_MP_SA.DKchart.width,
+            nDK_M5_MP_SA.DKchart.height*1.5
+        );
+
+        L1.pushLineChilds(nFdesolver.bigList.filter((d,i)=>{
+            if(i<10){
+                return true;
+            }
+        }));
+        L1.Draw();
+
+        // let nFdesoler_help = new KIMGL_Fdesoler_help(L1,20+nDK_M5_MP_SA.DKchart.width,150 + OCHLCHART_height + 5,OCHLCHART_height,new Shaders());
+        // nFdesoler_help.SVGonCanvas.tagetSVG = nDK_M5_MP_SA.DKchart.chart.SVGonCanvas;
+
+
+
+
+    </script>
+    
+</body>
+</html>

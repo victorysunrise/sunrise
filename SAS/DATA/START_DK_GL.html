@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>SAS SVG</title>
+
+	<script src="./JS/jquery/jquery.js"></script>
+	<script src="./JS/d3v4/build/d3.min.js"></script>
+    <script src="./JS/techan/dist/techan.js"></script>
+
+
+	<script src="./JS/WebGL/webgl-utils.js"></script>
+	<script src="./JS/WebGL/webgl-debug.js"></script>
+	<script src="./JS/WebGL/cuon-utils.js"></script>
+	<script src="./JS/WebGL/cuon-matrix.js"></script>
+    <script src="./JS/KIMLIB/webgl_KIMLIB.js"></script>
+
+
+
+    <script src="./JS/KIMLIB/SVG_lib.js"></script>
+    <script src="./JS/KIMLIB/SVG_AVPSHC.js"></script>
+    <script src="./JS/three/three.min.js"></script>
+    <script src="./JS/three/BufferGeometryUtils.js"></script>
+
+
+    <script src="./JS/KIMLIB/THR.js"></script>
+
+
+</head>
+
+
+
+<body>
+	<h2>SAS SVG</h2>
+
+
+
+
+
+	<link rel="stylesheet" href="css/simpleexample.css">
+
+
+	<script type="text/javascript">
+		var OCHLCHART_width = 800 ,  OCHLCHART_height = 300,  BRUSH_height=50;
+
+		var sh = new Stock("0000011");sh.load_DK();
+		var svg_SHdomain = d3.select("body").append("svg").attr("width",OCHLCHART_width).attr("height",BRUSH_height).attr("style","background:black");
+		var nDK_brush = new DK_brush(svg_SHdomain,OCHLCHART_width,BRUSH_height,sh);
+
+		var stock = new Stock("0027142");stock.load_DK();
+		nDK_brush
+			.pushchild(
+				new candlestick_DK(
+					d3.select("body")
+						.append("svg")
+						.attr("width",OCHLCHART_width)
+						.attr("height",OCHLCHART_height)
+						.attr("style","background:black")
+				,OCHLCHART_width
+				,OCHLCHART_height
+				,stock,sh
+			)
+			.add_index_line("AVP15")	
+			.add_index_line("AVP30")	
+			.add_index_line("AVP60")	
+			.add_index_line("AVP120")	
+			.add_index_line("AVP240")	
+		);
+
+	</script>
+
+	<br>
+
+
+
+	<script type="text/javascript">
+		Candlechartshader = new Shaders(OCHLCHART_width, OCHLCHART_height,VSHADER_SOURCE,FSHADER_SOURCE);
+
+		var stocks = [];
+		// stocks.push(new Stock("0027142"));	stocks[stocks.length-1].load_DK();
+		stocks.push(new Stock("0023002"));	stocks[stocks.length-1].load_DK();
+		stocks.push(new Stock("0029192"));	stocks[stocks.length-1].load_DK();
+		stocks.push(new Stock("0026682"));	stocks[stocks.length-1].load_DK();
+		stocks.push(new Stock("0024872"));	stocks[stocks.length-1].load_DK();
+		stocks.push(new Stock("0024392"));	stocks[stocks.length-1].load_DK();
+		stocks.push(new Stock("0021772"));	stocks[stocks.length-1].load_DK();
+		
+
+
+		var sGL_list = [];
+		for(var i=0;i<stocks.length;i++){
+			var canvas = document.createElement("canvas");
+			document.body.appendChild(canvas);
+			canvas.width = OCHLCHART_width;
+		    canvas.height = OCHLCHART_height;
+			canvas.style.position = "absolute";
+		    canvas.style.top = 500+i*(OCHLCHART_height+20) + "px";
+		    canvas.style.left = 100+ "px";
+
+			sGL_list.push(new KIMGL_Candlechart(stocks[i],document.body,canvas,nDK_brush,Candlechartshader));
+
+		}
+
+		// draw
+		nDK_brush.brushedfcn();
+		for(sGL of sGL_list){sGL.Draw();}
+
+		function refresh_THR(){
+			var start_r = new Date();
+
+			for(sGL of sGL_list){sGL.Draw();}
+				console.log("All time : ", + new Date() - start_r);
+		}
+
+	</script>	
+
+
+
+
+
+<!-- 	<script type="text/javascript">
+		var shimage = new KIMGL_Draw_CandleChart_To_buffer(800,200,VSHADER_SOURCE,FSHADER_SOURCE);
+		changeCameraDomain(camera,xS,yS_sh);
+		shimage.updateMPVmatrix_fliped(camera);
+		shimage.glclear();
+		shimage.KIMGL_Draw_CandleChart(shbodyr,{UpColor:0xAAAAAA, DownColor:0x333333,name: "sh"});
+		shimage.renderToTexture();
+	</script> -->
+
+
+
+
+
+
+
+
+</body>
+</html>

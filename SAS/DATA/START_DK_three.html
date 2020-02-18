@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>SAS SVG</title>
+
+	<script src="./JS/jquery/jquery.js"></script>
+	<script src="./JS/d3v4/build/d3.min.js"></script>
+    <script src="./JS/techan/dist/techan.js"></script>
+    <script src="./JS/KIMLIB/SVG_lib.js"></script>
+    <script src="./JS/KIMLIB/SVG_AVPSHC.js"></script>
+    <script src="./JS/three/three.min.js"></script>
+    <script src="./JS/three/BufferGeometryUtils.js"></script>
+
+
+    <script src="./JS/KIMLIB/THR.js"></script>
+
+
+</head>
+
+
+
+<body>
+	<h2>SAS SVG</h2>
+
+
+
+
+
+	<link rel="stylesheet" href="css/simpleexample.css">
+
+
+	<script type="text/javascript">
+		var start = + new Date();
+	
+		var OCHLCHART_width = 800 ,  OCHLCHART_height = 200;
+		var BRUSH_height=50;
+
+
+
+
+		var sh = new Stock("0000011");sh.load_DK();
+		var svg_SHdomain = d3.select("body").append("svg")
+					.attr("width",OCHLCHART_width).attr("height",BRUSH_height).attr("style","background:black");
+		var nDK_brush = new DK_brush(svg_SHdomain,OCHLCHART_width,BRUSH_height,sh);
+			
+		var stock = new Stock("0027142");stock.load_DK();
+		var svg = d3.select("body").append("svg").attr("width",OCHLCHART_width).attr("height",OCHLCHART_height).attr("style","background:black");		
+					
+		var a = new candlestick_DK(svg,OCHLCHART_width,OCHLCHART_height,stock,sh);
+			a.add_index_line("AVP15");	
+			a.add_index_line("AVP30");	
+			a.add_index_line("AVP60");	
+			a.add_index_line("AVP120");	
+			a.add_index_line("AVP240");	
+		nDK_brush.pushchild(a);
+
+		var end = + new Date();
+		console.log(end-start);
+		// var svg_SHdomain_2 = d3.select("body").append("svg")
+		// 			.attr("width",OCHLCHART_width).attr("height",BRUSH_height).attr("style","background:black");
+		// var nDK_brush_2 = new DK_brush(svg_SHdomain_2,OCHLCHART_width,BRUSH_height,sh);
+		// var svg_2 = d3.select("body").append("svg").attr("width",OCHLCHART_width).attr("height",OCHLCHART_height).attr("style","background:black");							
+		// var a2 = new candlestick_DK(svg_2,OCHLCHART_width,OCHLCHART_height,stock,sh);
+		// 	a2.add_index_line("AVP15");	
+		// 	a2.add_index_line("AVP30");	
+		// 	a2.add_index_line("AVP60");	
+		// 	a2.add_index_line("AVP120");	
+		// 	a2.add_index_line("AVP240");	
+		// nDK_brush_2.pushchild(a2);
+
+
+		start = + new Date();
+
+		let renderer = new THREE.WebGLRenderer({antialiasing:true});
+		renderer.setSize(OCHLCHART_width, OCHLCHART_height);
+		renderer.setPixelRatio(window.devicePixelRatio);
+		document.body.appendChild(renderer.domElement);
+		const scene = new THREE.Scene();
+
+
+		var shdate = sh.DK.map( techan.plot.candlestick().accessor().d);
+		var xScale = d3.scaleOrdinal().domain(shdate).range(d3.range(1,10000));
+
+
+
+
+		
+
+		THR_candlechart(scene,xScale,stock.DK);
+
+		var xS = [xScale(stock.DK[0].date),xScale(stock.DK[stock.DK.length-1].date)];
+		var yS = techan.scale.plot.ohlc(stock.DK,techan.plot.candlestick().accessor()).domain();
+
+		var camera = new THREE.OrthographicCamera(0, 0, 0, 0, 1, 10000);
+		changeCameraDomain(camera,xS,yS);
+
+		
+
+	
+		
+		function refresh_THR(){
+			refresh_THR_sh();
+
+			var start_3 = + new Date();
+		    	var DTs = [];
+			    if(d3.event.selection !== null) DTs = shdate.slice.apply(shdate,  d3.event.selection.map(nDK_brush.xScale.zoomable().invert));
+			
+		    	var startDT = DTs[0], endDT=DTs[DTs.length-1];
+			    var data = stock.DK.filter(d => (d.date >= startDT) & (d.date <= endDT));
+
+			    // console.log(data);
+				var xS = [xScale(startDT),xScale(endDT)];
+				var yS = techan.scale.plot.ohlc(data,techan.plot.candlestick().accessor()).domain();
+
+				changeCameraDomain(camera,xS,yS);
+
+				scene.remove(backRECT);
+
+				console.log(camera);
+				gbackRECT = new THREE.PlaneGeometry((camera.left-camera.right)*0.9, (camera.top-camera.bottom)*0.9, 1);
+				gbackRECT.translate(camera.position.x ,camera.position.y,2);		
+				// backRECT = new THREE.Mesh(gbackRECT,new THREE.MeshBasicMaterial({color: 0xAA00AA}));
+				backRECT = new THREE.Mesh(gbackRECT, boxMaterial);
+
+
+				scene.add(backRECT);
+				renderer.render(scene, camera);
+			console.log("4",new Date()-start_3);
+		}
+
+
+
+		const scene_sh = new THREE.Scene();
+		const renderer_sh = new THREE.WebGLRenderer();
+		renderer_sh.setSize(OCHLCHART_width, OCHLCHART_height);
+		renderer_sh.setPixelRatio(window.devicePixelRatio);
+		document.body.appendChild(renderer_sh.domElement);
+
+		var shColorOption = {
+			UpColor: 	0xAAAAAA,
+			DownColor: 	0x333333
+		}
+		THR_candlechart(scene_sh,xScale,sh.DK,shColorOption);
+		var xS_sh = [xScale(sh.DK[0].date),xScale(sh.DK[sh.DK.length-1].date)];
+		var yS_sh = techan.scale.plot.ohlc(sh.DK,techan.plot.candlestick().accessor()).domain();
+
+		var camera_sh = new THREE.OrthographicCamera(0, 0, 0, 0, 1, 10000);
+		changeCameraDomain(camera_sh,xS_sh,yS_sh);
+
+		// renderer_sh.render(scene_sh, camera_sh);
+
+
+
+
+
+		var bufferTexture = new THREE.WebGLRenderTarget(OCHLCHART_width, OCHLCHART_height);
+		renderer_sh.setRenderTarget(bufferTexture);
+		renderer_sh.render(scene_sh, camera_sh);
+		console.log(renderer_sh);
+
+
+		console.log(xS_sh,yS_sh);	
+		function refresh_THR_sh(){
+			var start_4 = + new Date();			
+		    	var DTs = [];
+			    if(d3.event.selection !== null){
+			    	DTs = shdate.slice.apply(shdate,  d3.event.selection.map(nDK_brush.xScale.zoomable().invert));
+			    } 
+		    	var startDT = DTs[0], endDT=DTs[DTs.length-1];
+			    var data = sh.DK.filter(d => (d.date >= startDT) & (d.date <= endDT));
+
+				var xS = [xScale(startDT),xScale(endDT)];
+				var yS = techan.scale.plot.ohlc(data,techan.plot.candlestick().accessor()).domain();
+				changeCameraDomain(camera_sh,xS,yS);
+				renderer_sh.render(scene_sh, camera_sh);
+				console.log(bufferTexture);
+			console.log("4",new Date()-start_4);
+		}
+
+
+		var gbackRECT = new THREE.PlaneGeometry((camera.left-camera.right)*0.9, (camera.top-camera.bottom)*0.9, 1);
+		gbackRECT.translate(camera.position.x ,camera.position.y,2);
+
+		var boxMaterial = new THREE.MeshBasicMaterial({map:bufferTexture.texture});
+
+		// var backRECT = new THREE.Mesh(gbackRECT,boxMaterial);
+		// var backRECT = new THREE.Mesh(gbackRECT,new THREE.MeshBasicMaterial({color:0x00ff00}));
+		var backRECT = new THREE.Mesh(gbackRECT,new THREE.MeshBasicMaterial({map:bufferTexture.texture}));
+
+
+
+		scene.add(backRECT);
+
+		renderer.render(scene, camera);	
+
+	</script>
+
+
+
+
+</body>
+</html>
