@@ -1,0 +1,196 @@
+
+
+body {
+    font: 10px sans-serif;
+}
+
+text {
+    fill: #000;
+}
+
+.candlestick path.candle {
+    stroke: #000000;
+}
+
+.candlestick path.candle.body {
+    stroke-width: 0;
+}
+
+.candlestick path.candle.up {
+    fill: #FF0000;
+    stroke: #FF0000;
+}
+
+.candlestick path.candle.down {
+    fill: #00AA00;
+    stroke: #00AA00;
+}
+
+
+.grid line {
+    stroke: #666666;
+    stroke-opacity: 0.6;
+    shape-rendering: crispEdges
+}
+.grid path {
+    stroke-width: 0;
+}
+
+
+
+.y.annotation.left path {
+    fill: #00AA00;
+}
+
+.y.annotation.right path {
+    fill: #FF0000;
+}
+
+.x.annotation path {
+    fill: #DDD80E;
+}
+
+.crosshair {
+    cursor: crosshair;
+}
+
+.crosshair path.wire {
+    stroke: #DDDDDD;
+    stroke-dasharray: 1, 1;
+}
+
+.crosshair .axisannotation path {
+    fill: #DDDDDD;
+}
+
+
+path.line {
+    fill: none;
+    stroke: #BF5FFF;
+    stroke-width: 1;
+}
+path.volume {
+    fill: #AAAAAA;
+    opacity: 0.5;
+}
+
+.candlestick_sh path.candle {
+    stroke: #000000;
+}
+
+.candlestick_sh path.candle.body {
+    stroke-width: 0;
+}
+
+.candlestick_sh path.candle.up {
+    fill: #AAAAAA;
+    stroke: #AAAAAA;
+}
+
+.candlestick_sh path.candle.down {
+    fill: #333333;
+    stroke: #333333;
+}
+
+.AVP15 path {
+    fill: none;
+    stroke: #AA0000;
+}
+.AVP30 path {
+    fill: none;
+    stroke: #00AA00;
+}
+.AVP60 path {
+    fill: none;
+    stroke: #0000AA;
+}
+.AVP120 path {
+    fill: none;
+    stroke: #00AAAA;
+}
+.AVP240 path {
+    fill: none;
+    stroke: #AAAA00;
+}
+
+.MODEL1 path {
+    fill: none;
+    stroke: #AA00AA;
+    stroke-width: 1;
+}
+
+
+.hot0 {
+    /*opacity: 0.5;*/
+    stroke-opacity: 0.7;
+    /*shape-rendering: crispEdges;*/
+    stroke-width:1;
+
+}
+.hot1 {
+    opacity: 1;
+    stroke-width:1.5;
+}
+
+
+path.SA15  {
+    fill: none;
+    stroke: #AA0000;
+}
+
+path.SA30  {
+    fill: none;
+    stroke: #00AA00;
+}
+
+path.SA60  {
+    fill: none;
+    stroke: #0000AA;
+}
+
+path.SA120  {
+    fill: none;
+    stroke: #00AAAA;
+}
+
+path.SA240  {
+    fill: none;
+    stroke: #AAAA00;
+}
+
+.SA15  {
+    fill: #AA0000;
+}
+
+.SA30  {
+    fill: #00AA00;
+}
+
+.SA60  {
+    fill: #0000AA;
+}
+
+.SA120  {
+    fill: #00AAAA;
+}
+
+.SA240  {
+    fill: #AAAA00;
+}
+
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.sticky + .content {
+  padding-top: 102px;
+}
+.header {
+  padding: 10px 16px;
+  background: #555;
+  color: #f1f1f1;
+  z-index: 10;
+}
